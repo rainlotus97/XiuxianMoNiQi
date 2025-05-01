@@ -1,0 +1,1 @@
+import{_ as a,c as e,o as t,d as o,a as s}from"./index-CccCRhd2.js";const _={},r={class:"game_container"};function i(c,n){return t(),e("div",r)}const d=a(_,[["render",i]]),m={class:"main_page"},l=o({__name:"CultivationView",setup(c){return(n,p)=>(t(),e("div",m,[s(d)]))}});export{l as default};
