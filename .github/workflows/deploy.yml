@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - master
+      
+permissions:
+  contents: write      # 允许读写仓库内容（checkout / push）
+  issues: write        # 允许创建/修改 Issue
+  pull-requests: write # 允许创建/修改 PR
 
 jobs:
   build-and-deploy:
