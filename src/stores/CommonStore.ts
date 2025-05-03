@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { MediaCheckHelper, type MediaHelperType } from '../utils/MediaCheckHelper';
+import { MediaCheckHelper, type MediaHelperType } from '../utils/mediaCheckHelper';
 
 export const useCommonStore = defineStore('common', {
     state: () => ({

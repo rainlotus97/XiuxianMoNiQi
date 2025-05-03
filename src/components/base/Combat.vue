@@ -1,61 +1,111 @@
 <template>
     <div class="game_container">
-        <div class="green">
-            {{ xiuxianzhe.currentHp }}
-        </div>
-        <div class="red">
-            {{ guaiwu.currentHp }}
-        </div>
+        <PersonView :name="xiuxianzhe.NAME" :identity="xiuxianzhe.IDENTITY" :current-h-p="xiuxianzhe.CURRENT_HP"
+            :-max-h-p="xiuxianzhe.HP" :current-m-p="xiuxianzhe.CURRENT_MP" :-max-m-p="xiuxianzhe.MP" />
+        <PersonView :name="guaiwu.NAME" :identity="guaiwu.IDENTITY" :current-h-p="guaiwu.CURRENT_HP" :-max-h-p="guaiwu.HP"
+            :current-m-p="guaiwu.CURRENT_MP" :-max-m-p="guaiwu.MP" :is-l-t-r="true" />
+    </div>
+    <div class="box" style="display: flex;justify-content: space-evenly;">
+        <button class="cancel" @click="cancelLoop">暂停战斗</button>
+        <button class="start" @click="reStartLoop">恢复战斗</button>
     </div>
 </template>
     
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { Person } from "../../common/person";
+import { onMounted, onUnmounted } from "vue";
+import { Person, PersonType } from "../../common/battle/person";
 import { reactive } from "vue";
-import { useBattleLoop } from "../../utils/battleLoop";
-let person = new Person('小白');
-let monster = new Person('亚古兽');
+import { BattleLoop } from "../../utils/battleLoop";
+import { UnitState, type UnitEffect } from "../../common/battle/unit";
+import PersonView from './Person.vue'
+let person = new Person('陈平安', PersonType.PLAYER);
+let monster = new Person('荒天帝', PersonType.MONSTER);
 
 let xiuxianzhe = reactive<Person>(person);
 let guaiwu = reactive<Person>(monster);
-onMounted(() => {
-    reset()
 
-})
-
+// 重置数据
 const reset = () => {
-    xiuxianzhe.attack = 3;
-    xiuxianzhe.currentHp = 10;
-    xiuxianzhe.maxHp = 10;
-    xiuxianzhe.maxMp = 10;
-    xiuxianzhe.currentMp = 10;
-    xiuxianzhe.maxExp = 100;
+    xiuxianzhe.CURRENT_HP = xiuxianzhe.HP;
+    xiuxianzhe.CURRENT_MP = xiuxianzhe.MP;
 
-    guaiwu.attack = 2;
-    guaiwu.currentHp = 10;
-    guaiwu.maxHp = 10;
-    guaiwu.maxMp = 10;
-    guaiwu.currentMp = 10;
-    guaiwu.maxExp = 100;
+    guaiwu.ATK = 15 + Math.random() * 10;
+    guaiwu.CURRENT_HP = guaiwu.HP;
+    guaiwu.CURRENT_MP = guaiwu.MP;
 }
 
 const attackFunc = () => {
-    if (!xiuxianzhe.currentHp || !guaiwu.currentHp) {
-        console.log('战斗胜利');
+    if (!xiuxianzhe.CURRENT_HP || !guaiwu.CURRENT_HP) {
+        if (!guaiwu.CURRENT_HP) {
+            xiuxianzhe.EXP += 10;
+            console.log('修仙者获得了胜利,并获得经验10点,当前经验值为:', xiuxianzhe.EXP);
+        } else {
+            xiuxianzhe.EXP -= 10;
+            console.log('怪物获得了胜利,并损失经验10点,当前经验值为:', xiuxianzhe.EXP);
+        }
         reset()
         return;
     }
-    console.log('战斗开始');
-    if (xiuxianzhe.currentHp > 0) {
-        guaiwu?.updateHp(xiuxianzhe.attack);
+    if (xiuxianzhe.CURRENT_HP > 0) {
+        if (!xiuxianzhe.isHitEnemy(guaiwu.DODGE)) {
+            console.log('敌人进行了闪避');
+            return;
+        }
+        if (xiuxianzhe.isHitEffect(guaiwu.RESIST, UnitState.DIZZINESS)) {
+            const debuff: UnitEffect = {
+                startTime: new Date().getTime(),
+                duration: 2000,
+                state: UnitState.DIZZINESS,
+                status: {
+                    ATK: -2,
+                    DEF: -2
+                }
+            }
+            guaiwu.useEffect(debuff);
+        }
+        const demage = xiuxianzhe.getPhysicalDemage(guaiwu?.getFinalDenfence() || 0);
+        console.log(`修仙者发起了攻击,造成了${demage}点伤害`);
+        guaiwu.CURRENT_HP = guaiwu.CURRENT_HP - demage > 0 ? Math.floor(guaiwu.CURRENT_HP - demage) : 0;
     }
-    if (guaiwu.currentHp > 0) {
-        xiuxianzhe?.updateHp(guaiwu?.attack);
+    if (guaiwu.CURRENT_HP > 0) {
+        if (!guaiwu.isHitEnemy(xiuxianzhe.DODGE)) {
+            console.log('修仙者进行了闪避');
+            return;
+        }
+        if (guaiwu.isHitEffect(xiuxianzhe.RESIST, UnitState.POISONED)) {
+            const debuff: UnitEffect = {
+                startTime: new Date().getTime(),
+                duration: 2000,
+                state: UnitState.POISONED,
+                status: {
+                    ATK: -2
+                }
+            }
+            xiuxianzhe.useEffect(debuff);
+        }
+        const demage = guaiwu.getPhysicalDemage(xiuxianzhe?.getFinalDenfence() || 0);
+        console.log(`怪物发起了攻击,造成了${demage}点伤害`);
+        xiuxianzhe.CURRENT_HP = xiuxianzhe.CURRENT_HP - demage > 0 ? Math.floor(xiuxianzhe.CURRENT_HP - demage) : 0;
     }
+    xiuxianzhe.updateEffect();
+    guaiwu.updateEffect();
 }
+let battleLoop = new BattleLoop(attackFunc, 1000);
 
-useBattleLoop(attackFunc)
+onMounted(() => {
+    battleLoop.start();
+    reset();
+
+})
+onUnmounted(() => {
+    battleLoop.end();
+})
+const cancelLoop = () => {
+    battleLoop.pause();
+}
+const reStartLoop = () => {
+    battleLoop.resume();
+}
 </script>
     
 <style lang="less">
@@ -77,5 +127,8 @@ useBattleLoop(attackFunc)
     width: 100px;
     height: 40px;
     background-color: red;
+}
+.box{
+    margin-top: 20px;
 }
 </style>

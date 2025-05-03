@@ -20,10 +20,10 @@ export class DocumentViewChange {
      */
     static setWindowAvoidArea(left: number, top: number, right: number, bottom: number) {
         const fontSize = parseFloat(getComputedStyle(document.documentElement)['fontSize']);
-        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_TOP, `${top / fontSize}rem`);
-        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_BOTTOM, `${bottom / fontSize}rem`);
-        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_LEFT, `${left / fontSize}rem`);
-        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_RIGHT, `${right / fontSize}rem`);
+        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_TOP, `${(top / fontSize).toFixed(2)}rem`);
+        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_BOTTOM, `${(bottom / fontSize).toFixed(2)}rem`);
+        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_LEFT, `${(left / fontSize).toFixed(2)}rem`);
+        document.documentElement.style.setProperty(VaribaleSize.SIZE_AVOID_RIGHT, `${(right / fontSize).toFixed(2)}rem`);
     }
 
     /**

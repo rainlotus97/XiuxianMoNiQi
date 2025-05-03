@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from 'vue';
-import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from './utils/MediaCheckHelper';
-import { useCommonStore } from './stores/CommonStore';
-import { DocumentViewChange } from './utils/DocumentViewChange';
+import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from './utils/mediaCheckHelper';
+import { useCommonStore } from './stores/commonStore';
+import { DocumentViewChange } from './utils/documentViewChange';
 import TabBar from './components/base/TabBar.vue';
 
 const commonStore = useCommonStore();
@@ -59,9 +59,7 @@ onUnmounted(() => {
     <div class="main_content">
       <TabBar />
       <router-view v-slot="{ Component }">
-        <keep-alive>
           <component :is="Component" />
-        </keep-alive>
       </router-view>
     </div>
     <div class="main_footer"></div>
@@ -95,3 +93,4 @@ onUnmounted(() => {
   transition: min-height 0.5s;
 }
 </style>
+./stores/commonStore./utils/documentViewChange./utils/mediaCheckHelper
