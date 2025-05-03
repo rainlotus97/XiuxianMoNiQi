@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from 'vue';
-import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from './utils/mediaCheckHelper';
-import { useCommonStore } from './stores/commonStore';
-import { DocumentViewChange } from './utils/documentViewChange';
+import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from './utils/mediaHelper';
+import { useBasicStore } from './stores/basicStore';
+import { DocumentViewChange } from './utils/viewChangeUtils';
 import TabBar from './components/base/TabBar.vue';
 
-const commonStore = useCommonStore();
+const basicStore = useBasicStore();
 const medialHelperCallback: MediaHelperCallback = (data: MediaHelperType) => {
-  commonStore.updateMediaHelperType(data);
+  basicStore.updateMediaHelperType(data);
   console.log('MediaCheckHelper callback:', data);
 };
 
@@ -18,14 +18,12 @@ onMounted(() => {
   // 设置初始的 mediaHelperType
   const mediaHelperType = MediaCheckHelper.getMediaHelperType();
   // 更新 store 中的 mediaHelperType
-  commonStore.updateMediaHelperType(mediaHelperType);
-
-
+  basicStore.updateMediaHelperType(mediaHelperType);
 });
 
 // Listen for media query changes
 watch(
-  () => commonStore.mediaHelperType,
+  () => basicStore.mediaHelperType,
   (newValue: MediaHelperType) => {
     console.log('Media query changed:', newValue);
     viewChange(newValue);
@@ -93,4 +91,4 @@ onUnmounted(() => {
   transition: min-height 0.5s;
 }
 </style>
-./stores/commonStore./utils/documentViewChange./utils/mediaCheckHelper
+./stores/commonStore./utils/documentViewChange./utils/mediaCheckHelper./stores/basicStore./utils/viewChangeUtils./utils/mediaHelper
