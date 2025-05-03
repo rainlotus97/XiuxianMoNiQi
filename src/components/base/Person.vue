@@ -33,7 +33,6 @@ interface Props {
     MaxHP: number;
     currentMP: number;
     MaxMP: number;
-    actionPercent: number;
     isLTR?: boolean;
 }
 const props = defineProps<Props>();
