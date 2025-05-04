@@ -1,5 +1,6 @@
 import { clampMin } from "../../utils/commonUtils";
-import { AttackType, Unit, UnitState, type UnitEffect } from "./unit";
+import { LogUtil } from "../../utils/logUtils";
+import { AttackType, Unit, UnitState, type UnitEffect, resetPartialUnit } from "./unit";
 
 // 人物类型
 export enum PersonType {
@@ -11,6 +12,7 @@ export enum PersonType {
     PET = 'pet'
 }
 
+export const MAX_GAUGE_COUNT: number = 1000;
 
 /**
  * 人物类型
@@ -32,12 +34,16 @@ export class Person extends Unit {
     CURRENT_MP: number = this.MP;
     // 等级
     LEVEL: number = 0;
-    // 状态列表
-    STATE_LIST: Set<UnitState> = new Set();
     // 增益/减益效果(临时)
     private EFFECT_MAP: Map<string, UnitEffect> = new Map;
     // 附加属性(装备附带)
     private ADDITION_PERPORTY: Map<string, Partial<Unit>> = new Map();
+    // buff属性
+    private BUFF_EFFECT: Partial<Unit> = resetPartialUnit();
+    // 附加属性
+    private EXTRA_EFFECT: Partial<Unit> = resetPartialUnit();
+    // 回合数
+    private ROUND_COUNT: number = 0;
 
     constructor(name: string, identity: PersonType, age: number = 1, sex: SexType = SexType.SECRET, exp: number = 0) {
         super();
@@ -66,6 +72,71 @@ export class Person extends Unit {
         this.CRIT_DMG = Math.floor(Math.max(this.ATK, this.M_ATK) / 100 * 2.5) + parseFloat(this.CRIT_DMG) + '%';
     }
 
+    public getStringUnit(key: keyof Unit) {
+        return clampMin(Math.round(parseFloat(this[key] as string) + parseFloat(this.BUFF_EFFECT[key] as string || '0%') + parseFloat(this.EXTRA_EFFECT[key] as string || '0%'))) + '%';
+    }
+
+    public getNumberUnit(key: keyof Unit) {
+        return clampMin(Math.round((this[key] as number) + (this.BUFF_EFFECT[key] as number || 0) + (this.EXTRA_EFFECT[key] as number || 0)));
+    }
+
+    /**
+     * 获取对应异常状态抵抗值
+     * @param state 单位状态
+     * @returns 数值
+     */
+    public getResist(state: UnitState) {
+        return clampMin(Math.round(parseFloat(this.RESIST[state] as string) + parseFloat(this.BUFF_EFFECT.RESIST?.[state] as string || '0%') + parseFloat(this.EXTRA_EFFECT.RESIST?.[state] as string || '0%'))) + '%';
+    }
+
+    public getRoundCount(): number {
+        return this.ROUND_COUNT;
+    }
+    /**
+     * 是否可行动
+     */
+    public canAct(): boolean {
+        return this.CURRENT_HP ? true : false;
+    }
+
+    public updateIncomeInfo(income: IncomeType) {
+        this.EXP += income.EXP;
+        // todo 其余物品的获取待定
+        console.log(this.NAME+' exp: '+this.EXP);
+        
+        // 更新等级属性
+        let currentLevel = this.getLevel();
+        if (currentLevel !== this.LEVEL) {
+            this.initData();
+        }
+
+        // 清除所有临时属性
+        this.reset();
+    }
+
+    public reset() {
+        this.CURRENT_HP = this.getNumberUnit('HP');
+        this.CURRENT_MP = this.getNumberUnit('MP');
+        this.EFFECT_MAP.clear();
+        this.BUFF_EFFECT = resetPartialUnit();
+        this.ROUND_COUNT = 0;
+    }
+
+    /**
+     * 更新状态
+     * 
+     * @param roundCount 回合数
+     */
+    public updateStatus(): void {
+        this.ROUND_COUNT++;
+        if (!this.EFFECT_MAP.size) {
+            return;
+        }
+        this.EFFECT_MAP.forEach((effect: UnitEffect) => {
+            this.deleteBuffEffect(effect.state);
+        })
+    }
+
     /**
      * 应用指定类型效果
      * 
@@ -77,7 +148,7 @@ export class Person extends Unit {
             this.deleteAdditionEffect(type)
         }
         this.ADDITION_PERPORTY.set(type, effect);
-        this.deployStatus(effect);
+        this.deployStatus(effect, this.EXTRA_EFFECT);
     }
 
     /**
@@ -90,7 +161,7 @@ export class Person extends Unit {
         if (this.ADDITION_PERPORTY.has(type)) {
             this.ADDITION_PERPORTY.delete(type);
         }
-        effect && this.removeStatus(effect);
+        effect && this.removeStatus(effect, this.EXTRA_EFFECT);
     }
 
     /**
@@ -110,22 +181,20 @@ export class Person extends Unit {
 
     // 是否暴击
     private isCritcal(): boolean {
-        return Math.random() <= parseFloat(this.CRIT_RATE) / 100 ? true : false;
+        const critRate = this.getStringUnit('CRIT_RATE');
+        return Math.random() <= parseFloat(critRate) / 100 ? true : false;
     }
 
     /**
      * 清除效果
      */
-    public deleteEffect(state: UnitState, isForce: boolean = false): void {
+    public deleteBuffEffect(state: UnitState, isForce: boolean = false): void {
         if (this.EFFECT_MAP.has(state)) {
             const targetEffect = this.EFFECT_MAP.get(state) as UnitEffect;
-            let currentDate = new Date().getTime();
-            let isClear = currentDate - targetEffect.startTime >= targetEffect.duration;
+            let isClear = this.ROUND_COUNT - targetEffect.startCount >= targetEffect.roundCount;
             if (isForce || isClear) {
-                this.removeStatus(targetEffect.status);
+                this.removeStatus(targetEffect.status, this.BUFF_EFFECT);
                 this.EFFECT_MAP.delete(state);
-                this.STATE_LIST.delete(state);
-                console.log(this.NAME, state + '效果已经清除');
             }
         }
     }
@@ -134,64 +203,60 @@ export class Person extends Unit {
      * 应用效果
      * @param effect 增益/减益效果
      */
-    public useEffect(effect: UnitEffect): void {
+    public useBuffEffect(effect: UnitEffect): boolean {
         // 清除旧的效果
-        if (this.EFFECT_MAP.has(effect.state)) {
-            const targetEffect = this.EFFECT_MAP.get(effect.state) || null;
-            if (targetEffect) {
-                // 需要强制清除负面状态，重新设置
-                this.deleteEffect(targetEffect.state, true);
-            }
+        const targetEffect = this.EFFECT_MAP.get(effect.state) || null;
+        const isNewBuff: boolean = targetEffect ? false : true;
+        if (targetEffect && !effect.isOverlay) {
+            // 需要强制清除负面状态，重新设置
+            this.deleteBuffEffect(targetEffect.state, true);
+            LogUtil.buffUpdate({ target: this, effect: effect.state });
+        } else if (targetEffect && effect.isOverlay) {
+            // 需要融合数据
+            this.deployStatus(targetEffect.status, effect.status);
+            this.removeStatus(targetEffect.status, this.BUFF_EFFECT);
+            LogUtil.buffStrenthen({ target: this, effect: effect.state });
         }
         this.EFFECT_MAP.set(effect.state, effect);
-        this.STATE_LIST.add(effect.state);
-        this.deployStatus(effect.status);
-        console.log(this.NAME, !effect.state.startsWith('de_') ? '获得了增益效果' : '受到了debuff效果' + effect.state);
-    }
-
-    public updateEffect() {
-        if (!this.EFFECT_MAP.size) {
-            console.log('无需清理异常状态数据');
-            return;
-        }
-        this.EFFECT_MAP.forEach((effect: UnitEffect) => {
-            this.deleteEffect(effect.state);
-        })
+        this.deployStatus(effect.status, this.BUFF_EFFECT);
+        return isNewBuff;
     }
 
     // 应用效果
-    private deployStatus(status: Partial<Unit>): void {
+    private deployStatus(status: Partial<Unit>, targetStatus: Partial<Unit>): void {
         Object.entries(status).forEach(([key, value]) => {
-            const prop = key as keyof Person;
-            if (key in this) {
+            const prop = key as keyof Partial<Unit>;
+            if (key in targetStatus) {
                 if (typeof value === 'number') {
-                    (this[prop] as number) = clampMin(Math.floor((this[prop] as number) + value));
+                    (targetStatus[prop] as number) = (Math.floor((targetStatus[prop] as number) + value));
                 } else if (typeof value === 'string') {
-                    const currentValue = parseFloat((this[prop] as string));
-                    (this[prop] as string) = clampMin(Math.floor(currentValue + parseFloat(value))) + '%';
+                    const currentValue = parseFloat((targetStatus[prop] as string));
+                    (targetStatus[prop] as string) = (Math.floor(currentValue + parseFloat(value))) + '%';
                 } else {
-                    let currentValue = this[prop] as Record<UnitState, string>;
-                    currentValue[UnitState.DIZZINESS] = clampMin(Math.floor(parseFloat(currentValue[UnitState.DIZZINESS]) + parseFloat(value[UnitState.DIZZINESS]))) + '%';
-                    currentValue[UnitState.POISONED] = clampMin(Math.floor(parseFloat(currentValue[UnitState.POISONED]) + parseFloat(value[UnitState.POISONED]))) + '%';
+                    let targetValue = targetStatus[prop] as Record<UnitState, string>;
+                    let statusValue = value as Record<UnitState, string>;
+                    targetValue[UnitState.DIZZINESS] = (Math.floor(parseFloat(targetValue[UnitState.DIZZINESS]) + parseFloat(statusValue[UnitState.DIZZINESS]))) + '%';
+                    targetValue[UnitState.POISONED] = (Math.floor(parseFloat(targetValue[UnitState.POISONED]) + parseFloat(statusValue[UnitState.POISONED]))) + '%';
                 }
             }
         })
     }
 
     // 去除效果
-    private removeStatus(status: Partial<Unit>): void {
+    private removeStatus(status: Partial<Unit>, targetStatus: Partial<Unit>): void {
         Object.entries(status).forEach(([key, value]) => {
-            const prop = key as keyof Person;
-            if (key in this) {
+            const prop = key as keyof Partial<Unit>;
+            if (key in targetStatus) {
                 if (typeof value === 'number') {
-                    (this[prop] as number) = clampMin(Math.floor((this[prop] as number) - value));
+                    (targetStatus[prop] as number) = (Math.floor((targetStatus[prop] as number) - value));
                 } else if (typeof value === 'string') {
-                    const currentValue = parseFloat((this[prop] as string));
-                    (this[prop] as string) = clampMin(Math.floor(currentValue - parseFloat(value))) + '%';
+                    const currentValue = parseFloat((targetStatus[prop] as string));
+                    (targetStatus[prop] as string) = (Math.floor(currentValue - parseFloat(value))) + '%';
                 } else {
-                    let currentValue = this[prop] as Record<UnitState, string>;
-                    currentValue[UnitState.DIZZINESS] = clampMin(Math.floor(parseFloat(currentValue[UnitState.DIZZINESS]) - parseFloat(value[UnitState.DIZZINESS]))) + '%';
-                    currentValue[UnitState.POISONED] = clampMin(Math.floor(parseFloat(currentValue[UnitState.POISONED]) - parseFloat(value[UnitState.POISONED]))) + '%';
+                    let targetValue = targetStatus[prop] as Record<UnitState, string>;
+                    let statusValue = value as Record<UnitState, string>;
+                    targetValue[UnitState.DIZZINESS] = (Math.floor(parseFloat(targetValue[UnitState.DIZZINESS]) - parseFloat(statusValue[UnitState.DIZZINESS]))) + '%';
+                    targetValue[UnitState.POISONED] = (Math.floor(parseFloat(targetValue[UnitState.POISONED]) - parseFloat(statusValue[UnitState.POISONED]))) + '%';
                 }
             }
         })
@@ -206,11 +271,12 @@ export class Person extends Unit {
      */
     public getPhysicalDemage(targetDefence: number, skillMultiplier: number = 1): number {
         // 技能倍率 × { Attack × [Attack / (Attack + (TargetDefense × (1–Pen)) )] } × (暴击 ? 暴击倍数 : 1)
-        const validDenominator = (this.ATK + (targetDefence * (1 - (parseFloat(this.PEN) / 100))));
+        const attack = this.getNumberUnit('ATK');
+        const validDenominator = (attack + (targetDefence * (1 - (parseFloat(this.PEN) / 100))));
         if (!validDenominator) {
             return 0;
         }
-        return clampMin(Math.round(skillMultiplier * (this.ATK * (this.ATK / validDenominator)) * (this.isCritcal() ? parseFloat(this.CRIT_DMG) / 100 : 1)));
+        return clampMin(Math.round(skillMultiplier * (attack * (attack / validDenominator)) * (this.isCritcal() ? parseFloat(this.CRIT_DMG) / 100 : 1)));
     }
 
     /**
@@ -222,11 +288,14 @@ export class Person extends Unit {
      */
     public getMagicDemage(targetDefence: number, skillMultiplier: number = 1): number {
         // 技能倍率 × { MagicAttack × [MagicAttack / (MagicAttack + (TargetDefense × (1–PenM)) )] } × (暴击 ? 暴击倍数 : 1)
-        const validDenominator = (this.M_ATK + (targetDefence * (1 - (parseFloat(this.M_PEN) / 100))));
+        const magicAttack = this.getNumberUnit('M_ATK');
+        const magicPen = this.getStringUnit('M_PEN');
+        const critDmg = this.getStringUnit('CRIT_DMG');
+        const validDenominator = (magicAttack + (targetDefence * (1 - (parseFloat(magicPen) / 100))));
         if (!validDenominator) {
             return 0;
         }
-        return clampMin(Math.round(skillMultiplier * (this.M_ATK * (this.M_ATK / (this.M_ATK + (targetDefence * (1 - (parseFloat(this.M_PEN) / 100)))))) * (this.isCritcal() ? parseFloat(this.CRIT_DMG) / 100 : 1)));
+        return clampMin(Math.round(skillMultiplier * (magicAttack * (magicAttack / (magicAttack + (targetDefence * (1 - (parseFloat(magicPen) / 100)))))) * (this.isCritcal() ? parseFloat(critDmg) / 100 : 1)));
     }
 
     /**
@@ -240,10 +309,10 @@ export class Person extends Unit {
         let finalDefence = 0;
         // 魔法伤害
         if (attackType === AttackType.MAGIC_ATTACK) {
-            finalDefence = this.M_DEF;
+            finalDefence = this.getNumberUnit('M_DEF');
         } else {
             // 物理伤害
-            finalDefence = this.DEF
+            finalDefence = this.getNumberUnit('DEF');
         }
         return clampMin(finalDefence);
     }
@@ -255,22 +324,21 @@ export class Person extends Unit {
      * @returns 命中结果
      */
     public isHitEnemy(targetDodge: string): boolean {
-        const finalHit = parseFloat(this.HIT) - parseFloat(targetDodge);
+        const finalHit = parseFloat(this.getStringUnit('HIT')) - parseFloat(targetDodge);
         return Math.random() < finalHit / 100 ? true : false;
     }
 
     /**
      * 是否命中效果
      * 
-     * @param targetResist 目标抵抗值
-     * @param unitState 异常状态类型
+     * @param resist 抵抗值
      * @param extraHit 额外命中率
      * @returns 命中效果结果
      */
-    public isHitEffect(targetResist: Record<UnitState, string>, unitState: UnitState, extraHit: string = '0%'): boolean {
-        const resist = targetResist[unitState];
-        const finalHit = parseFloat(this.HIT) + parseFloat(extraHit) - parseFloat(resist);
-        return Math.random() < finalHit / 100 ? true : false;
+    public isHitEffect(resist: string, extraHit: string = '0%'): boolean {
+        const hitValue = parseFloat(this.getStringUnit('HIT')) + parseFloat(extraHit);
+        const finalHit = hitValue - parseFloat(resist);
+        return Math.random() < finalHit / hitValue ? true : false;
     }
 }
 
@@ -284,3 +352,40 @@ export enum SexType {
     FEMALE = 'female',
 }
 
+export const getExpByLevel = (level: number): number => {
+    // 经验公式EXP(L) = 100 * L^1.5
+    return Math.round(100 * level ^ 1.5);
+}
+
+export interface IncomeType {
+    // 获取经验 (+10: 加10经验; -10: 减10经验。)
+    EXP: number;
+    // 材料
+    MATERIAL?: GoodsType;
+    // 武器
+    ARMS?: ArmsType;
+}
+
+// 武器类型
+export interface ArmsType {
+    // 名称
+    name: string;
+    // 种类 如：大剑，袖箭，弓箭，长编，枪等等
+    type: string;
+    // 描述
+    description: string;
+    // 效果
+    effect: Partial<Unit>;
+}
+
+// 物品类型
+export interface GoodsType {
+    // 名称
+    name: string;
+    // 种类 如：木头、羽毛、龙血、草药
+    type: string;
+    // 描述
+    description: string;
+    // 效果
+    effect?: Partial<Unit>;
+}

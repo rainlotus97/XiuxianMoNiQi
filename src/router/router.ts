@@ -11,33 +11,34 @@ const routes = [
             {
                 path: '/status',
                 component: () => import('../pages/StatusView.vue'),
-                meta:{
-                    tab:'status',
-                    title:'状态'
+                meta: {
+                    tab: 'status',
+                    title: '状态'
                 }
             },
             {
                 path: '/backpack',
                 component: () => import('../pages/BackPackView.vue'),
-                meta:{
-                    tab:'backpack',
-                    title:'背包'
+                meta: {
+                    tab: 'backpack',
+                    title: '背包'
                 }
             },
             {
                 path: '/cultivation',
                 component: () => import('../pages/CultivationView.vue'),
-                meta:{
-                    tab:'cultivation',
-                    title:'修仙'
+                meta: {
+                    tab: 'cultivation',
+                    title: '修仙',
+                    keepAlive: true
                 }
             },
             {
                 path: '/sect',
                 component: () => import('../pages/SectView.vue'),
-                meta:{
-                    tab:'sect',
-                    title:'宗门'
+                meta: {
+                    tab: 'sect',
+                    title: '宗门'
                 }
             }
         ]

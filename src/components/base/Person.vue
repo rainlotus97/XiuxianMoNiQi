@@ -1,20 +1,20 @@
 <template>
     <div class="person_view">
         <div class="icon_area" :class="{ pos_left: isLTR, pos_right: !isLTR }" :style="{ backgroundColor: iconColor }">
-            {{ name }}
+            {{ displayName }}
         </div>
         <div class="p_area" :class="{ pos_left: !isLTR, pos_right: isLTR }">
             <div class="main_hp flex_start" :class="{ flex_end: !isLTR, flex_start: isLTR }">
                 <div class="current_hp" :style="{ width: hpPercent + '%' }">
                 </div>
                 <div class="hp_text" :class="{ pos_right: !isLTR, pos_left: isLTR, pr20: !isLTR, pl20: isLTR }">
-                    {{ `${currentHP} / ${MaxHP}` }}</div>
+                    {{ `${currentHP} / ${maxHP}` }}</div>
             </div>
             <div class="main_mp flex_start">
                 <div class="current_mp" :style="{ width: mpPercent + '%' }">
                 </div>
                 <div class="mp_text" :class="{ pos_right: !isLTR, pos_left: isLTR, pr20: !isLTR, pl20: isLTR }">
-                    {{ `${currentMP} / ${MaxMP}` }}</div>
+                    {{ `${currentMP} / ${maxMP}` }}</div>
             </div>
         </div>
     </div>
@@ -30,16 +30,17 @@ interface Props {
     identity: PersonType,
     name: string;
     currentHP: number;
-    MaxHP: number;
+    maxHP: number;
     currentMP: number;
-    MaxMP: number;
+    maxMP: number;
     isLTR?: boolean;
 }
 const props = defineProps<Props>();
 
-const iconColor = computed(() => props.identity === PersonType.PLAYER ? playerColors[0] : monsterColors[0])
-const hpPercent = computed(() => props.MaxHP ? (props.currentHP / props.MaxHP * 100) : 0);
-const mpPercent = computed(() => props.MaxMP ? (props.currentMP / props.MaxMP * 100) : 0);
+const displayName = computed(() => props.name.length > 3 ? props.name.slice(0, 2) + '...' : props.name);
+const iconColor = computed(() => props.identity === PersonType.PLAYER ? playerColors[Math.round((playerColors.length - 1) * Math.random())] : monsterColors[Math.round((monsterColors.length - 1) * Math.random())])
+const hpPercent = computed(() => props.maxHP ? (props.currentHP / props.maxHP * 100) : 0);
+const mpPercent = computed(() => props.maxMP ? (props.currentMP / props.maxMP * 100) : 0);
 
 </script>
     

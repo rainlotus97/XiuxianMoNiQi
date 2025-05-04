@@ -57,7 +57,9 @@ onUnmounted(() => {
     <div class="main_content">
       <TabBar />
       <router-view v-slot="{ Component }">
+        <KeepAlive :max="4">
           <component :is="Component" />
+        </KeepAlive>
       </router-view>
     </div>
     <div class="main_footer"></div>

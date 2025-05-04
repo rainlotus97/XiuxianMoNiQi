@@ -1,0 +1,55 @@
+/* src/assets/styles/animations.less */
+@keyframes attackAnim {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    50% {
+        transform: translateX(calc(-50% - 1.25rem));
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes counterattackAnim {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    50% {
+        transform: translateX(calc(-50% + 1.25rem));
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* 单位 wrapper 上切换这几个 class 即可触发动画 */
+.unit-wrapper {
+    /* 防止动画期间布局闪动 */
+    will-change: transform;
+    left: 50%;
+    transform: translateX(-50%);
+    position: relative;
+
+    &.attack {
+        animation: attackAnim 0.4s ease-in;
+    }
+
+    &.hit {
+        animation: attackAnim 0.4s ease-out 0.1s;
+        /* 受击同向前震 */
+    }
+
+    &.counterattack {
+        animation: counterattackAnim 0.4s ease-in;
+    }
+
+    &.hit-counter {
+        animation: counterattackAnim 0.4s ease-out 0.1s;
+        /* 反击受击同向后震 */
+    }
+}

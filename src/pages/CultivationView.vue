@@ -4,7 +4,7 @@
     </div>
 </template>
     
-<script setup lang='ts'>
+<script name='CultivationView' setup lang='ts'>
 import Combat from '../components/base/Combat.vue';
 </script>
     
