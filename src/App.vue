@@ -4,13 +4,15 @@ import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from
 import { useBasicStore } from './stores/basicStore';
 import { DocumentViewChange } from './utils/viewChangeUtils';
 import TabBar from './components/base/TabBar.vue';
-
+import { ref } from 'vue';
+import router from './router/router';
+import ImageButton from './components/base/ImageButton.vue';
 const basicStore = useBasicStore();
 const medialHelperCallback: MediaHelperCallback = (data: MediaHelperType) => {
   basicStore.updateMediaHelperType(data);
   console.log('MediaCheckHelper callback:', data);
 };
-
+let isLogin = ref(false);
 
 onMounted(() => {
   // 初始化 MediaCheckHelper
@@ -19,6 +21,7 @@ onMounted(() => {
   const mediaHelperType = MediaCheckHelper.getMediaHelperType();
   // 更新 store 中的 mediaHelperType
   basicStore.updateMediaHelperType(mediaHelperType);
+  viewChange(mediaHelperType);
 });
 
 // Listen for media query changes
@@ -49,10 +52,18 @@ onUnmounted(() => {
   MediaCheckHelper.destroy();
 });
 
+const login = () => {
+  isLogin.value = true;
+  router.replace('/cultivation')
+}
+const register = () => {
+  console.log('暂未开放!');
+
+}
 </script>
 
 <template>
-  <div class="main_box">
+  <div class="main_box" v-if="isLogin">
     <div class="main_nav"></div>
     <div class="main_content">
       <TabBar />
@@ -64,9 +75,120 @@ onUnmounted(() => {
     </div>
     <div class="main_footer"></div>
   </div>
+
+  <div class="main_box login_view" :class="{
+    grid4: basicStore.mediaHelperType.gridColumns === 4 ||
+      (basicStore.mediaHelperType.gridColumns > 4 && basicStore.mediaHelperType.orientationType === 'portrait'),
+    grid8: basicStore.mediaHelperType.gridColumns > 4 && basicStore.mediaHelperType.orientationType !== 'portrait'
+  }" v-else>
+    <div class="image_area">
+      <div class="title">
+        <img src="./assets/image/banner.png" width="100%" height="fit-content" alt="" srcset="">
+      </div>
+      <div class="main_person">
+        <img src="./assets/image/main_person.png" width="100%" height="fit-content" alt="" srcset="">
+      </div>
+    </div>
+    <div class="btn_area">
+      <image-button class="login_btn" bg-image="/src/assets/image/login.png" @click="login" />
+      <image-button class="register_btn" bg-image="/src/assets/image/register.png" @click="register" />
+    </div>
+  </div>
 </template>
 
-<style scoped lang="less">
+<style lang="less">
+.login_view {
+  background-color: #e6f8f8;
+
+}
+
+.grid4 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .image_area {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      flex: 1;
+      display: flex;
+      align-items: end;
+      width: 85%;
+      margin: 0 auto;
+    }
+
+    .main_person {
+      flex: 2.5;
+      display: flex;
+      align-items: center;
+      width: 95%;
+      margin: 0 auto;
+    }
+  }
+
+  .btn_area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .login_btn {
+      transition: all 0.4s ease-in-out;
+      margin: 1rem auto 1.875rem;
+    }
+
+    .register_btn {
+      transition: all 0.5s ease-in-out;
+    }
+  }
+}
+
+.grid8 {
+  display: flex;
+  flex-direction: column;
+
+  .image_area {
+    flex: 5;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      flex: 1;
+      display: flex;
+      align-items: end;
+      width: 25%;
+      height: 0;
+      margin: 0 auto;
+    }
+
+    .main_person {
+      flex: 3;
+      display: flex;
+      align-items: center;
+      width: 35%;
+      margin: 0 auto;
+    }
+  }
+
+  .btn_area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .login_btn {
+      transition: all 0.5s ease-in-out;
+    }
+
+    .register_btn {
+      transition: all 0.5s ease-in-out;
+    }
+  }
+}
+
 .main_box {
   width: 100vw;
   height: 100vh;
@@ -93,4 +215,3 @@ onUnmounted(() => {
   transition: min-height 0.5s;
 }
 </style>
-./stores/commonStore./utils/documentViewChange./utils/mediaCheckHelper./stores/basicStore./utils/viewChangeUtils./utils/mediaHelper

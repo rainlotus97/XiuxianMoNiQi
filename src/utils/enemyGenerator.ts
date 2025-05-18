@@ -1,4 +1,4 @@
-import { Person, PersonType, getExpByLevel } from "../common/battle/person";
+import { Person, SlideType, getExpByLevel } from "../common/battle/person";
 import { generateCultivationMonster } from "./randomMonster";
 
 // 难度
@@ -31,7 +31,7 @@ export class EnemyGenrator {
         const enemies: Person[] = [];
         for (let i = 0; i < num; i++) {
             const randomMonster = generateCultivationMonster(level);
-            const person = new Person(randomMonster.name, PersonType.MONSTER, randomMonster.age, randomMonster.gender, getExpByLevel(randomMonster.level));
+            const person = new Person(randomMonster.name, SlideType.ENEMY, randomMonster.age, randomMonster.gender, getExpByLevel(randomMonster.level));
             person.ATK = Math.round(person.ATK * factor);
             person.M_ATK = Math.round(person.M_ATK * factor);
             person.HP = Math.round(person.HP * factor);

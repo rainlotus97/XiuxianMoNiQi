@@ -5,15 +5,19 @@ export const useBasicStore = defineStore('basic', {
     state: () => ({
         // 媒体查询类型
         mediaHelperType: MediaCheckHelper.getMediaHelperType() as MediaHelperType,
+        personData: ''
     }),
     actions: {
         // 更新媒体查询类型
         updateMediaHelperType(mediaHelperType: MediaHelperType) {
             this.mediaHelperType = mediaHelperType;
         },
+        saveData(data: string) {
+            this.personData = data;
+        }
     },
     persist: {
         key: 'common',
-        storage: sessionStorage,
+        storage: localStorage,
     },
 })

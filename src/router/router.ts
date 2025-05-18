@@ -5,10 +5,6 @@ const routes = [
         path: '/',
         children: [
             {
-                path: '',
-                redirect: '/cultivation'
-            },
-            {
                 path: '/status',
                 component: () => import('../pages/StatusView.vue'),
                 meta: {

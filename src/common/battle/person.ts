@@ -3,13 +3,11 @@ import { LogUtil } from "../../utils/logUtils";
 import { AttackType, Unit, UnitState, type UnitEffect, resetPartialUnit } from "./unit";
 
 // 人物类型
-export enum PersonType {
-    // 玩家
-    PLAYER = 'player',
+export enum SlideType {
+    // 友方
+    FRIENDLY = 'friendly',
     // 怪物
-    MONSTER = 'monster',
-    // 宠物
-    PET = 'pet'
+    ENEMY = 'enemy',
 }
 
 export const MAX_GAUGE_COUNT: number = 1000;
@@ -25,7 +23,7 @@ export class Person extends Unit {
     // 性别
     SEX: SexType = SexType.SECRET;
     // 身份
-    IDENTITY: PersonType;
+    SLIDE: SlideType;
     // 经验
     EXP: number = 0;
     // 当前生命
@@ -45,11 +43,11 @@ export class Person extends Unit {
     // 回合数
     private ROUND_COUNT: number = 0;
 
-    constructor(name: string, identity: PersonType, age: number = 1, sex: SexType = SexType.SECRET, exp: number = 0) {
+    constructor(name: string, identity: SlideType, age: number = 1, sex: SexType = SexType.SECRET, exp: number = 0) {
         super();
         this.NAME = name;
         this.AGE = age;
-        this.IDENTITY = identity;
+        this.SLIDE = identity;
         this.SEX = sex;
         this.EXP = exp;
         this.initData();

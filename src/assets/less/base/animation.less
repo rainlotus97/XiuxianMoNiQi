@@ -1,5 +1,5 @@
 /* src/assets/styles/animations.less */
-@keyframes attackAnim {
+@keyframes toLeftAnim {
     0% {
         transform: translateX(-50%);
     }
@@ -13,7 +13,7 @@
     }
 }
 
-@keyframes counterattackAnim {
+@keyframes toRightAnim {
     0% {
         transform: translateX(-50%);
     }
@@ -27,6 +27,20 @@
     }
 }
 
+@keyframes toTopAnim {
+    0% {
+        transform: translate(-50%, 0);
+    }
+
+    50% {
+        transform: translate(-50%, -1rem);
+    }
+
+    100% {
+        transform: translate(-50%, 0);
+    }
+}
+
 /* 单位 wrapper 上切换这几个 class 即可触发动画 */
 .unit-wrapper {
     /* 防止动画期间布局闪动 */
@@ -36,20 +50,22 @@
     position: relative;
 
     &.attack {
-        animation: attackAnim 0.4s ease-in;
+        animation: toRightAnim 0.4s ease-in;
     }
 
     &.hit {
-        animation: attackAnim 0.4s ease-out 0.1s;
-        /* 受击同向前震 */
+        animation: toRightAnim 0.4s ease-out 0.1s;
     }
 
     &.counterattack {
-        animation: counterattackAnim 0.4s ease-in;
+        animation: toLeftAnim 0.4s ease-in;
     }
 
     &.hit-counter {
-        animation: counterattackAnim 0.4s ease-out 0.1s;
-        /* 反击受击同向后震 */
+        animation: toLeftAnim 0.4s ease-out 0.1s;
+    }
+
+    &.miss {
+        animation: toTopAnim 0.4s ease-in;
     }
 }

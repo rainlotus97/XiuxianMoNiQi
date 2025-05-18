@@ -8,13 +8,13 @@
                 <div class="current_hp" :style="{ width: hpPercent + '%' }">
                 </div>
                 <div class="hp_text" :class="{ pos_right: !isLTR, pos_left: isLTR, pr20: !isLTR, pl20: isLTR }">
-                    {{ `${currentHP} / ${maxHP}` }}</div>
+                    {{ hpDisplay }}</div>
             </div>
             <div class="main_mp flex_start">
                 <div class="current_mp" :style="{ width: mpPercent + '%' }">
                 </div>
                 <div class="mp_text" :class="{ pos_right: !isLTR, pos_left: isLTR, pr20: !isLTR, pl20: isLTR }">
-                    {{ `${currentMP} / ${maxMP}` }}</div>
+                    {{ mpDisplay }}</div>
             </div>
         </div>
     </div>
@@ -22,12 +22,12 @@
     
 <script setup lang='ts'>
 import { computed } from 'vue';
-import { PersonType } from '../../common/battle/person';
-import { monsterColors, playerColors } from '../../utils/commonUtils';
+import { SlideType } from '../../common/battle/person';
+import { formatWithCustomUnits, monsterColors, playerColors } from '../../utils/commonUtils';
 
 /* Props 定义 */
 interface Props {
-    identity: PersonType,
+    identity: SlideType,
     name: string;
     currentHP: number;
     maxHP: number;
@@ -37,8 +37,21 @@ interface Props {
 }
 const props = defineProps<Props>();
 
+const hpDisplay = computed(() => {
+    const cur = formatWithCustomUnits(props.currentHP);
+    const max = formatWithCustomUnits(props.maxHP);
+    return `${cur} / ${max}`;
+})
+
+const mpDisplay = computed(() => {
+    const cur = formatWithCustomUnits(props.currentMP);
+    const max = formatWithCustomUnits(props.maxMP);
+    return `${cur} / ${max}`;
+})
+
+
 const displayName = computed(() => props.name.length > 3 ? props.name.slice(0, 2) + '...' : props.name);
-const iconColor = computed(() => props.identity === PersonType.PLAYER ? playerColors[Math.round((playerColors.length - 1) * Math.random())] : monsterColors[Math.round((monsterColors.length - 1) * Math.random())])
+const iconColor = computed(() => props.identity === SlideType.FRIENDLY ? playerColors[Math.round((playerColors.length - 1) * Math.random())] : monsterColors[Math.round((monsterColors.length - 1) * Math.random())])
 const hpPercent = computed(() => props.maxHP ? (props.currentHP / props.maxHP * 100) : 0);
 const mpPercent = computed(() => props.maxMP ? (props.currentMP / props.maxMP * 100) : 0);
 
@@ -46,7 +59,7 @@ const mpPercent = computed(() => props.maxMP ? (props.currentMP / props.maxMP * 
     
 <style lang="less">
 .person_view {
-    width: 6.25rem;
+    width: 7.5rem;
     height: 2.5rem;
     position: relative;
     border-radius: 0.25rem;
@@ -76,7 +89,7 @@ const mpPercent = computed(() => props.maxMP ? (props.currentMP / props.maxMP * 
     }
 
     .p_area {
-        width: 5rem;
+        width: 6.25rem;
         height: 100%;
         position: absolute;
         top: 0;
