@@ -7,6 +7,8 @@ import TabBar from './components/base/TabBar.vue';
 import { ref } from 'vue';
 import router from './router/router';
 import ImageButton from './components/base/ImageButton.vue';
+import login_btn from '@/assets/images/login_btn.png';
+import register_btn from '@/assets/images/register_btn.png';
 const basicStore = useBasicStore();
 const medialHelperCallback: MediaHelperCallback = (data: MediaHelperType) => {
   basicStore.updateMediaHelperType(data);
@@ -90,8 +92,8 @@ const register = () => {
       </div>
     </div>
     <div class="btn_area">
-      <image-button class="login_btn" bg-image="/src/assets/images/login.png" @click="login" />
-      <image-button class="register_btn" bg-image="/src/assets/images/register.png" @click="register" />
+      <image-button class="login_btn" :bg-image="login_btn" @click="login" />
+      <image-button class="register_btn" :bg-image="register_btn" @click="register" />
     </div>
   </div>
 </template>
