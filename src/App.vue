@@ -83,15 +83,15 @@ const register = () => {
   }" v-else>
     <div class="image_area">
       <div class="title">
-        <img src="./assets/image/banner.png" width="100%" height="fit-content" alt="" srcset="">
+        <img src="./assets/images/banner.png" width="100%" height="fit-content" alt="" srcset="">
       </div>
       <div class="main_person">
-        <img src="./assets/image/main_person.png" width="100%" height="fit-content" alt="" srcset="">
+        <img src="./assets/images/main_person.png" width="100%" height="fit-content" alt="" srcset="">
       </div>
     </div>
     <div class="btn_area">
-      <image-button class="login_btn" bg-image="/src/assets/image/login.png" @click="login" />
-      <image-button class="register_btn" bg-image="/src/assets/image/register.png" @click="register" />
+      <image-button class="login_btn" bg-image="/src/assets/images/login.png" @click="login" />
+      <image-button class="register_btn" bg-image="/src/assets/images/register.png" @click="register" />
     </div>
   </div>
 </template>
