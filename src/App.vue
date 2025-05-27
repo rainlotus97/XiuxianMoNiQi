@@ -5,7 +5,7 @@ import { useBasicStore } from './stores/basicStore';
 import { DocumentViewChange } from './utils/viewChangeUtils';
 import TabBar from '@/components/base/TabBar.vue';
 import { ref } from 'vue';
-import router from '@/router/router';
+import router from '@/router';
 import ImageButton from '@/components/base/ImageButton.vue';
 import login_btn from '@/assets/images/login_btn.png';
 import register_btn from '@/assets/images/register_btn.png';
