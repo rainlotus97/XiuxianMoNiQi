@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { TabBarItem } from '../../common/common';
+import type { TabBarItem } from '@/common/common';
 
 const route = useRoute()
 const router = useRouter()

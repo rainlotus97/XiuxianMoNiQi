@@ -1,4 +1,4 @@
-import { Person, SlideType, getExpByLevel } from "../common/battle/person";
+import { Person, SlideType, getExpByLevel } from "@/common/battle/person";
 import { generateCultivationMonster } from "./randomMonster";
 
 // 难度

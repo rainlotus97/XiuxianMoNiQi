@@ -1,4 +1,4 @@
-import { VaribaleSize } from "../common/variableConstants";
+import { VaribaleSize } from "@/common/variableConstants";
 
 export class DocumentViewChange {
     /**

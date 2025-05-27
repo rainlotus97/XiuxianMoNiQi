@@ -1,6 +1,6 @@
 import { reactive, type Reactive } from "vue";
-import type { Person, SlideType } from "../common/battle/person";
-import type { UnitState } from "../common/battle/unit";
+import type { Person, SlideType } from "@/common/battle/person";
+import type { UnitState } from "@/common/battle/unit";
 
 export interface LogOptions {
     actor?: Reactive<Person>;

@@ -22,8 +22,8 @@
     
 <script setup lang='ts'>
 import { computed } from 'vue';
-import { SlideType } from '../../common/battle/person';
-import { formatWithCustomUnits, monsterColors, playerColors } from '../../utils/commonUtils';
+import { SlideType } from '@/common/battle/person';
+import { formatWithCustomUnits, monsterColors, playerColors } from '@/utils/commonUtils';
 
 /* Props 定义 */
 interface Props {

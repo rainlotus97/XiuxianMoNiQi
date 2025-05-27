@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { LogUtil } from '../../utils/logUtils';
+import { LogUtil } from '@/utils/logUtils';
 
 // 滚动容器 Ref
 const scrollContainer = ref<HTMLElement | null>(null)

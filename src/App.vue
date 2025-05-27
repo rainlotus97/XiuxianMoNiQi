@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from 'vue';
-import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from './utils/mediaHelper';
+import { MediaCheckHelper, type MediaHelperType, type MediaHelperCallback } from '@/utils/mediaHelper';
 import { useBasicStore } from './stores/basicStore';
 import { DocumentViewChange } from './utils/viewChangeUtils';
-import TabBar from './components/base/TabBar.vue';
+import TabBar from '@/components/base/TabBar.vue';
 import { ref } from 'vue';
-import router from './router/router';
-import ImageButton from './components/base/ImageButton.vue';
+import router from '@/router/router';
+import ImageButton from '@/components/base/ImageButton.vue';
 import login_btn from '@/assets/images/login_btn.png';
 import register_btn from '@/assets/images/register_btn.png';
 const basicStore = useBasicStore();
