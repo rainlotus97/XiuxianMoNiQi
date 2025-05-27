@@ -1,14 +1,12 @@
 import type {
     Router,
-    NavigationGuardNext,
-    RouteLocationNormalized,
 } from 'vue-router'
 
 export default function setupRouterGuard(router: Router) {
     //路由前置守卫
-    router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-        next()
-    });
+    // router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    //     next()
+    // });
     // 路由后置守卫
     router.afterEach(() => {
         // 页面跳转后滚动到顶部
