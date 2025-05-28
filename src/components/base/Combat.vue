@@ -29,17 +29,17 @@
     
 <script setup lang="ts">
 import { onMounted, onUnmounted, type Reactive } from "vue";
-import { Person, SlideType, type IncomeType } from "../../common/battle/person";
+import { Person, SlideType, type IncomeType } from "@/common/battle/person";
 import { reactive } from "vue";
-import { BattleLoop } from "../../utils/battleLoop";
+import { BattleLoop } from "@/utils/battleLoop";
 import PersonView from './Person.vue';
-import { EnemyGenrator } from "../../utils/enemyGenerator";
-import { clampMin } from "../../utils/commonUtils";
-import { UnitState, type UnitEffect } from "../../common/battle/unit";
+import { EnemyGenrator } from "@/utils/enemyGenerator";
+import { clampMin } from "@/utils/commonUtils";
+import { UnitState, type UnitEffect } from "@/common/battle/unit";
 import LogView from './LogView.vue';
-import { LogUtil } from "../../utils/logUtils";
-import { useBasicStore } from "../../stores/basicStore";
-import { decryptData, encryptData } from "../../utils/cryptTools";
+import { LogUtil } from "@/utils/logUtils";
+import { useBasicStore } from "@/stores/basicStore";
+import { decryptData, encryptData } from "@/utils/cryptTools";
 const basicStore = useBasicStore();
 // generate playerList
 let playerList: Reactive<Person[]> = reactive<Person[]>([]);

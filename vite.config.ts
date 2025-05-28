@@ -1,12 +1,10 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import path from 'path'
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    }
+
+export default defineConfig(({ mode }) => {
+  if (mode === 'development') {
+    return import('./build/vite.config.dev').then(m => m.default)
+  } else {
+    return import('./build/vite.config.prod').then(m => m.default)
   }
 })
+

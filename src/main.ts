@@ -3,7 +3,7 @@ import './assets/less/main.less';
 import App from './App.vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import router from './router/router';
+import router from './router';
 
 const app = createApp(App);
 const pinia = createPinia();

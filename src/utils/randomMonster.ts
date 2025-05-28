@@ -1,4 +1,4 @@
-import { SexType } from "../common/battle/person";
+import { SexType } from "@/common/battle/person";
 
 // types.ts
 export type Monster = {

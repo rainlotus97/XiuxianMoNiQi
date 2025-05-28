@@ -6,9 +6,9 @@
 </template>
     
 <script setup lang='ts'>
-import { Person, SlideType } from '../common/battle/person';
-import { useBasicStore } from '../stores/basicStore';
-import { encryptData } from '../utils/cryptTools';
+import { Person, SlideType } from '@/common/battle/person';
+import { useBasicStore } from '@/stores/basicStore';
+import { encryptData } from '@/utils/cryptTools';
 
 const basicStore = useBasicStore();
 let person = new Person('陈平安', SlideType.FRIENDLY)

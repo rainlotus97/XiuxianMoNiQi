@@ -1,5 +1,5 @@
-import { clampMin } from "../../utils/commonUtils";
-import { LogUtil } from "../../utils/logUtils";
+import { clampMin } from "@/utils/commonUtils";
+import { LogUtil } from "@/utils/logUtils";
 import { AttackType, Unit, UnitState, type UnitEffect, resetPartialUnit } from "./unit";
 
 // 人物类型
