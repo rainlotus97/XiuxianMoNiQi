@@ -10,8 +10,6 @@ export enum SlideType {
     ENEMY = 'enemy',
 }
 
-export const MAX_GAUGE_COUNT: number = 1000;
-
 /**
  * 人物类型
  */
@@ -22,6 +20,8 @@ export class Person extends Unit {
     AGE: number = 1;
     // 性别
     SEX: SexType = SexType.SECRET;
+    // 头像
+    IMAGE: string = '';
     // 身份
     SLIDE: SlideType;
     // 经验
@@ -100,8 +100,8 @@ export class Person extends Unit {
     public updateIncomeInfo(income: IncomeType) {
         this.EXP += income.EXP;
         // todo 其余物品的获取待定
-        console.log(this.NAME+' exp: '+this.EXP);
-        
+        console.log(this.NAME + ' exp: ' + this.EXP);
+
         // 更新等级属性
         let currentLevel = this.getLevel();
         if (currentLevel !== this.LEVEL) {
