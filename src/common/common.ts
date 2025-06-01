@@ -1,4 +1,4 @@
-import type { Person } from "./battle/person"
+import type { Person, SexType } from "./battle/person"
 
 export interface TabBarItem {
     name: string,
@@ -74,4 +74,46 @@ export interface AwardInfo {
      * 装备
      */
     equipment?: any
+}
+/**
+ * 展示类型
+ */
+export enum ShowType {
+    /**
+     * 登录页
+     */
+    LOGIN,
+    /**
+     * 注册页
+     */
+    REGISTER,
+    /**
+     * 主页
+     */
+    HOME
+}
+
+/**
+ * 职业类型
+ */
+export interface ProfessionType {
+    name: string;
+    type: ProfessionKind;
+    gender: SexType;
+    image: string;
+}
+
+export enum ProfessionKind {
+    // 无
+    NONE,
+    // 剑客
+    SWORDSMAN,
+    // 符师
+    TALISMAN,
+    // 毒师
+    POISONMASTER,
+    // 医仙
+    MEDICALFAIRY,
+    // 狂人
+    BERSERKER,
 }

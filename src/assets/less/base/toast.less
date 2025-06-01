@@ -1,0 +1,35 @@
+/* toast.css */
+.toast-container {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.toast {
+    min-width: 7.5rem;
+    max-width: 18.75rem;
+    padding: 0.625rem 0.9375rem;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateY(1.25rem);
+}

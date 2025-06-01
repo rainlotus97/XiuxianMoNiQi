@@ -1,20 +1,28 @@
 <template>
     <div class="main_page">
         宗门
+        <div class="btn" @click="backToLogin">返回登录页</div>
         <div class="btn" @click="saveData">保存数据</div>
     </div>
 </template>
     
 <script setup lang='ts'>
+import router from '@/router';
+
 // import { Person, SlideType } from '@/common/battle/person';
-// import { useBasicStore } from '@/stores/basicStore';
+import { useBasicStore } from '@/stores/basicStore';
 // import { encryptData } from '@/utils/cryptTools';
 
-// const basicStore = useBasicStore();
+const basicStore = useBasicStore();
 // let person = new Person('陈平安', SlideType.FRIENDLY)
 const saveData = () => {
     // const userData = encryptData(JSON.stringify(person))
     // basicStore.saveData(userData)
+}
+
+const backToLogin = () => {
+    basicStore.setBackToLogin(true);
+    router.replace('/')
 }
 </script>
     

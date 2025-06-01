@@ -4,46 +4,49 @@ import type { SaveDataInfo } from '../common/common';
 
 export const useBasicStore = defineStore('basic', {
     state: () => ({
-        // 媒体查询类型
         mediaHelperType: MediaCheckHelper.getMediaHelperType() as MediaHelperType,
-        currentPlayerId: '',
-        saveDataMap: new Map<string, SaveDataInfo>()
+        currentPlayerId: '' as string,
+        saveDataMap: {} as Record<string, SaveDataInfo>,
+        isBackToLogin: false,
     }),
     actions: {
-        // 更新媒体查询类型
+        /**
+         * 设置回到登录页值
+         * 
+         * @param isBackToLogin 是否强制回到登录页
+         */
+        setBackToLogin(isBackToLogin: boolean): void {
+            this.isBackToLogin = isBackToLogin;
+        },
         updateMediaHelperType(mediaHelperType: MediaHelperType) {
-            this.mediaHelperType = mediaHelperType;
+            this.mediaHelperType = mediaHelperType
         },
-        setCurrentPlayerId(playerId: string): void {
-            this.currentPlayerId = playerId;
-        },
-        getCurrentPlayer(): SaveDataInfo | null {
-            return this.saveDataMap.get(this.currentPlayerId) || null;
-        },
-        /**
-         * 删除存档
-         * 
-         * @param userId 用户唯一标识
-         */
-        deleteSaveData(userId: string) {
-            this.saveDataMap.delete(userId);
-        },
-        /**
-         * 新增存档
-         * 
-         * @param userId 用户唯一标识
-         * @param playerSaveData 用户存档数据
-         */
-        addSaveData(userId: string, playerSaveData: SaveDataInfo) {
-            this.saveDataMap.set(userId, playerSaveData);
-        },
-        /**
-         * 删除全部存档
-         */
-        clearAllSaveData() {
-            this.saveDataMap.clear();
-        }
 
+        setCurrentPlayerId(playerId: string) {
+            this.currentPlayerId = playerId
+        },
+
+        getCurrentPlayer(): SaveDataInfo | null {
+            // 用对象的方式取
+            return this.saveDataMap[this.currentPlayerId] || null
+        },
+
+        deleteSaveData(userId: string) {
+            delete this.saveDataMap[userId]
+            // 如果删掉的是当前玩家，也清空 currentPlayerId
+            if (this.currentPlayerId === userId) {
+                this.currentPlayerId = ''
+            }
+        },
+
+        addSaveData(userId: string, playerSaveData: SaveDataInfo) {
+            this.saveDataMap[userId] = playerSaveData
+        },
+
+        clearAllSaveData() {
+            this.saveDataMap = {}
+            this.currentPlayerId = ''
+        },
     },
     persist: {
         key: 'common',

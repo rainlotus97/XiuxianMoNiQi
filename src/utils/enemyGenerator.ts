@@ -2,9 +2,10 @@ import { Person, SlideType, getExpByLevel } from "@/common/battle/person";
 import { generateCultivationMonster } from "./randomMonster";
 
 // 难度
-export type Difficulty = 'easy' | 'normal' | 'hard' | 'boss';
+export type Difficulty = 'veryEasy' | 'easy' | 'normal' | 'hard' | 'boss';
 
 interface EnemyNumType {
+    veryEasy: number;
     easy: number;
     normal: number;
     hard: number;
@@ -15,9 +16,9 @@ interface EnemyNumType {
 export class EnemyGenrator {
 
     // 对应难度所生成的怪物数量
-    private static countMap: EnemyNumType = { easy: 2, normal: 3, hard: 4, boss: 1 };
+    private static countMap: EnemyNumType = { veryEasy: 1, easy: 2, normal: 3, hard: 4, boss: 1 };
     // 对应难度放缩倍数
-    private static scale: EnemyNumType = { easy: 0.8, normal: 1, hard: 1.2, boss: 2 };
+    private static scale: EnemyNumType = { veryEasy: 0.5, easy: 0.8, normal: 1, hard: 1.2, boss: 2 };
 
     /**
      * 生成怪物数组

@@ -1,6 +1,7 @@
 import { clampMin } from "@/utils/commonUtils";
 import { LogUtil } from "@/utils/logUtils";
 import { AttackType, Unit, UnitState, type UnitEffect, resetPartialUnit } from "./unit";
+import { type ProfessionType, ProfessionKind } from "../common";
 
 // 人物类型
 export enum SlideType {
@@ -19,9 +20,11 @@ export class Person extends Unit {
     // 年龄
     AGE: number = 1;
     // 性别
-    SEX: SexType = SexType.SECRET;
+    SEX: SexType = SexType.MALE;
     // 头像
     IMAGE: string = '';
+    // 职业
+    PROFEESION: ProfessionKind = ProfessionKind.SWORDSMAN;
     // 身份
     SLIDE: SlideType;
     // 经验
@@ -43,13 +46,15 @@ export class Person extends Unit {
     // 回合数
     private ROUND_COUNT: number = 0;
 
-    constructor(name: string, identity: SlideType, age: number = 1, sex: SexType = SexType.SECRET, exp: number = 0) {
+    constructor(name?: string, slide?: SlideType, age: number = 1, sex: SexType = SexType.MALE, exp: number = 0, proffesion?: ProfessionType) {
         super();
-        this.NAME = name;
+        this.NAME = name || '';
         this.AGE = age;
-        this.SLIDE = identity;
+        this.SLIDE = slide || SlideType.FRIENDLY;
         this.SEX = sex;
         this.EXP = exp;
+        this.IMAGE = proffesion?.image ?? '';
+        this.PROFEESION = proffesion?.type ?? ProfessionKind.NONE;
         this.initData();
     }
 
@@ -68,6 +73,18 @@ export class Person extends Unit {
         this.SPD = Math.floor(this.SPD + this.LEVEL * 2);
         this.CRIT_RATE = Math.floor(Math.max(this.ATK, this.M_ATK) / 100) + parseFloat(this.CRIT_RATE) + '%';
         this.CRIT_DMG = Math.floor(Math.max(this.ATK, this.M_ATK) / 100 * 2.5) + parseFloat(this.CRIT_DMG) + '%';
+    }
+
+    /**
+     * 将人物对象转换为类
+     * @param person 人物对象
+     * @returns 人物类
+     */
+    public static fromObject(personJson: Partial<Person>): Person {
+        const person = new Person(personJson.NAME, personJson.SLIDE, personJson.AGE, personJson.SEX, personJson.EXP, { name: '', type: personJson.PROFEESION || ProfessionKind.NONE, image: personJson.IMAGE || '', gender: personJson.SEX || SexType.MALE })
+        // todo 还需要修改其他属性，例如抵抗
+        person.RESIST = personJson.RESIST || {};
+        return person;
     }
 
     public getStringUnit(key: keyof Unit) {
@@ -342,8 +359,6 @@ export class Person extends Unit {
 
 // 性别类型
 export enum SexType {
-    // 秘密
-    SECRET = 'secret',
     // 男性
     MALE = 'male',
     // 女性

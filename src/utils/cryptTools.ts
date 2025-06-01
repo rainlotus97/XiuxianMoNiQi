@@ -84,3 +84,23 @@ function wordArrayToUint8Array(wordArray: CryptoJS.lib.WordArray): Uint8Array {
   }
   return u8;
 }
+
+/**
+ * 生成一个随机唯一 ID（UUID v4）。
+ * @returns `{string}` 形如 '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+ */
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    // 现代浏览器、Node18+ 原生支持
+    return crypto.randomUUID();
+  }
+
+  // 回退实现：UUID v4
+  // 参考 RFC4122 §4.4
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 0x0f) >> 0;
+    // y: 8,9,a,b
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}

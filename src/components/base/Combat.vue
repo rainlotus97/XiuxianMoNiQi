@@ -1,6 +1,6 @@
 <template>
-    <span>{{ '已获得经验：' + playerList[0]?.EXP }}</span>
-    <span>{{ ' 当前等级：' + playerList[0]?.LEVEL }}</span>
+    <span>{{ '已获得经验：' + gainExp }}</span>
+    <span>{{ ' 当前等级：' + (person?.LEVEL || 0) }}</span>
     <div class="combat_view" :class="{ flex_row: basicStore.mediaHelperType.gridColumns > 4 }">
         <div class="game_container">
             <div class="attack_list">
@@ -28,8 +28,8 @@
 </template>
     
 <script setup lang="ts">
-import { onMounted, onUnmounted, type Reactive } from "vue";
-import { Person, SlideType, type IncomeType } from "@/common/battle/person";
+import { onMounted, onUnmounted, ref, type Reactive } from "vue";
+import { Person, SlideType } from "@/common/battle/person";
 import { reactive } from "vue";
 import { BattleLoop } from "@/utils/battleLoop";
 import PersonView from './Person.vue';
@@ -39,21 +39,41 @@ import { UnitState, type UnitEffect } from "@/common/battle/unit";
 import LogView from './LogView.vue';
 import { LogUtil } from "@/utils/logUtils";
 import { useBasicStore } from "@/stores/basicStore";
-import { decryptData, encryptData } from "@/utils/cryptTools";
+import { PlayerDataManager } from "@/utils/playerdata/playerDataManager";
+import { useToast } from "@/utils/toast";
+import router from "@/router";
+import type { AwardInfo } from "@/common/common";
+import type { Ref } from "vue";
 const basicStore = useBasicStore();
+// 用户角色
+let person: Ref<Person | null> = ref(null);
 // generate playerList
 let playerList: Reactive<Person[]> = reactive<Person[]>([]);
-
 // generate enemyList
 let enemyList: Reactive<Person[]> = reactive<Person[]>([]);
+// 所有人物队列（无序）
 let personList: Reactive<Person[]> = [];
-
+// 战斗队列（有序）
+let queueList: Reactive<Person[]>;
+// 获得的经验
+let gainExp: Ref<number> = ref(0);
 // 动画状态 map：unitId -> '' | 'attack' | 'hit' | 'counterattack' | 'hit-counter'
 const animState = reactive<Record<string, string>>({});
 
+// 异常返回登录页
+const exceptBack = () => {
+    toast.show('数据异常，重新登录!')
+    basicStore.setBackToLogin(true);
+    router.replace('/');
+}
+
 // 重置数据
 const reset = () => {
-    let enemies = EnemyGenrator.generateEnemies(person.getLevel(), 'easy');
+    if (!person.value) {
+        exceptBack()
+        return
+    }
+    let enemies = EnemyGenrator.generateEnemies(person.value.getLevel(), 'veryEasy');
     enemyList = enemies;
     playerList.forEach((person: Reactive<Person>) => {
         person.reset();
@@ -62,29 +82,28 @@ const reset = () => {
     queueList = personList.sort((a, b) => b.SPD - a.SPD);
 }
 
+// 自动战斗
 const autoBattle = () => {
     const isPlayerFail: boolean = playerList.every((player: Reactive<Person>) => !player.CURRENT_HP);
     const isEnemyFail: boolean = enemyList.every((enemy: Reactive<Person>) => !enemy.CURRENT_HP);
     // 敌方胜利
     if (isPlayerFail) {
-        playerList.forEach((player: Reactive<Person>) => {
-            const income: IncomeType = {
-                EXP: -10
-            }
-            player.updateIncomeInfo(income);
-        })
+        let awardInfo: AwardInfo = {
+            exp: -Math.round(10 * Math.random())
+        }
+        PlayerDataManager.gainAwardInfo(awardInfo);
+        gainExp.value = PlayerDataManager.getPlayerData()?.assetsInfo?.exp || 0;
         LogUtil.defeated({ actor: enemyList[0], target: playerList[0] })
         reset();
         return;
     }
     // 玩家胜利
     if (isEnemyFail) {
-        playerList.forEach((player: Reactive<Person>) => {
-            const income: IncomeType = {
-                EXP: Math.round(100 * Math.random())
-            }
-            player.updateIncomeInfo(income);
-        })
+        let awardInfo: AwardInfo = {
+            exp: Math.round(10 * Math.random()),
+        }
+        PlayerDataManager.gainAwardInfo(awardInfo);
+        gainExp.value = PlayerDataManager.getPlayerData()?.assetsInfo?.exp || 0;
         LogUtil.defeated({ target: enemyList[0], actor: playerList[0] })
         reset();
         return;
@@ -155,7 +174,7 @@ const autoBattle = () => {
     }
 }
 
-let queueList: Reactive<Person[]>;
+// 获取第一个角色
 const getFirstPerson = (): Reactive<Person> | undefined => {
     if (queueList.length) {
         let isLoop = true;
@@ -174,18 +193,19 @@ const getFirstPerson = (): Reactive<Person> | undefined => {
     return undefined;
 }
 let battleLoop: BattleLoop | null = null;
-let person = new Person('陈平安', SlideType.FRIENDLY);
+const toast = useToast();
 onMounted(() => {
-    let person2 = new Person('宠物甲', SlideType.FRIENDLY);
-    let person3 = new Person('柳如烟', SlideType.FRIENDLY);
-    person.SPD += 5;
-    person2.SPD += 1;
-    person3.SPD += 3;
-    playerList.push(person);
-    playerList.push(person2);
-    playerList.push(person3);
+    let playerData = PlayerDataManager.getPlayerData();
+    if (!playerData) {
+        exceptBack();
+        return;
+    }
+    const userInfo = playerData.userInfo;
+    person.value = Person.fromObject(userInfo);
+    gainExp.value = PlayerDataManager.getPlayerData()?.assetsInfo?.exp || 0;
+    playerList.push(person.value);
 
-    let enemies = EnemyGenrator.generateEnemies(clampMin(Math.round(person.getLevel() - 2)), 'easy');
+    let enemies = EnemyGenrator.generateEnemies(clampMin(Math.round(person.value.getLevel() - 2)), 'veryEasy');
     enemyList = enemies;
     personList = [...playerList, ...enemies];
     queueList = personList.sort((a, b) => b.SPD - a.SPD);
@@ -198,23 +218,10 @@ onUnmounted(() => {
 })
 const cancelLoop = () => {
     battleLoop?.pause();
-    compress()
-}
-
-let str = ''
-const compress = async () => {
-    str = await encryptData(JSON.stringify(person))
-    console.log(str);
-}
-
-const decrypt = async () => {
-    let data = await decryptData(str)
-    console.log(data);
 }
 
 const reStartLoop = () => {
     battleLoop?.resume();
-    decrypt()
 }
 </script>
     
